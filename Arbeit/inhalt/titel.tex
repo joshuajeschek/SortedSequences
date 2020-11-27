@@ -1,0 +1,72 @@
+
+\titlehead{
+    \vspace*{-1.5cm}
+    % Schriftfamilie wie alle Überschriften, aber nicht fett
+    \usekomafont{disposition}\mdseries
+    \begin{center}
+        \raisebox{-1ex}{\includegraphics[scale=1.4]{assets/TUC_deutsch_einzeile_CMYK}}
+        \\
+        \hrulefill \\[1em]
+        {\Large\dcdepart}\\[0.5em]
+        \dcprof
+    \end{center}
+    \vspace*{1.5cm}
+}
+
+\subject{\textbf\Huge\dcsubject}
+
+\title{\Large
+    \dctitle
+    \\
+    \dcsubtitle
+}
+
+\author{\dcauthorfirstname~\dcauthorlastname}
+
+\date{\dcplace, den \dcdate
+    \\
+    \dcuni
+}
+
+\publishers{
+    {\parbox{\textwidth}{
+        \begin{tabbing}
+            \textbf {Betreuer:}\quad\=\kill
+            \textbf {Prüfer:}   \>\dcpruefer\\
+            \textbf {Betreuer:} \>\dcadvisor
+        \end{tabbing}
+    }}
+}
+
+\lowertitleback{
+\textbf{\dcauthorlastname, \dcauthorfirstname}\\
+\dctitle\\
+\dcsubject,~\dcdepart\\
+\dcuni,~\ifcase\month\or
+  Januar\or Februar\or März\or April\or Mai\or Juni\or
+    Juli\or August\or September\or Oktober\or November\or Dezember\fi
+    ~\number\year
+}
+
+\pagenumbering{gobble}
+\maketitle
+
+\def\abstractname{Abstract}
+\begin{abstract}
+{\LARGE\textbf{Abstract}}
+\\\\
+\blindtext
+\end{abstract}
+
+\cleardoubleemptypage
+\pagenumbering{roman}
+\pdfbookmark{Inhaltsverzeichnis}{Inhaltsverzeichnis}
+\tableofcontents
+
+\cleardoublepage
+\markboth{Abbildungsverzeichnis}{Abbildungsverzeichnis}
+\listoffigures
+
+\cleardoublepage
+\pagenumbering{arabic}
+\setcounter{page}{1}

@@ -1,0 +1,17 @@
+*.aux
+*.log
+*.loa
+*.gz
+*.out
+*.lot
+*.lof
+*.toc
+*.exe
+*.bak
+*.sav
+*.bbl
+*.bcf
+*.blg
+*.bst
+*blx.bib
+*.xml

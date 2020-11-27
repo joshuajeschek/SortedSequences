@@ -1,0 +1,45 @@
+\documentclass[
+    11pt,
+    a4paper,
+    german,
+    twoside,
+    headsepline,
+%   automark,      %UNUSED
+    appendixprefix,
+    openany,
+    onehalfspacing,
+]{scrreprt}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{ inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{a4wide}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{blindtext}              % Blindtext
+\usepackage{algorithm}
+\usepackage{setspace}
+\usepackage[backend=bibtex,citestyle=alphabetic,bibstyle=alphabetic]{biblatex}
+\usepackage{scrhack}                % Prevent warning
+\usepackage{csquotes}               % Prevent warning
+\usepackage{amssymb}
+\usepackage{dsfont}
+
+\include{metadata}
+
+\bibliography{literatur}
+
+\begin{document}
+\include{inhalt/titel}
+
+\include{inhalt/hauptteil}
+
+\include{inhalt/schlussteil}
+
+\printbibheading
+\printbibliography[type=book,heading=subbibliography,title={Bücher}]
+\printbibliography[type=online,heading=subbibliography,title={Webseiten}]
+\include{inhalt/selbständigkeitserklärung}
+
+\end{document}
