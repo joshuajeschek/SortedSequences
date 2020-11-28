@@ -65,8 +65,8 @@ class DoublyLinkedList:
 
     def count(self):
         current = self.head.succ
-        i = 1
-        while  current != self.head:
+        i = 0
+        while current != self.head:
             i += 1
             current = current.succ
         return i

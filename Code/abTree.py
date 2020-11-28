@@ -68,7 +68,9 @@ class Node:
         for x in range(i, self.d + 1, 1):
             c1.append(self.c[x])
 
-        if self.d < B:
+        d1 = len(c1) - 1
+
+        if d1 <= B:
             self.s, self.c, self.d = s1, c1, (self.d + 1)
             return None, None
         else:
@@ -120,7 +122,7 @@ class Node:
                         self.c[i + 1].c = c1
                         self.c[i + 1].d = d1
 
-                    else:   # hier nicht (typerror)
+                    else:
                         m = ceil(d1 / 2)
 
                         self.c[i].s = s1[0:m]
@@ -132,6 +134,56 @@ class Node:
                         self.c[i + 1].d = d1 - m
 
                         self.s[i] = s1[m]
+
+    def mergeRec(self, lvl, root, splitter, l_r):
+        i = self.locateLocally(l_r)
+        if lvl == 0:
+            root.s[-1] = splitter
+            k, t = root.s[1:], root.c[1:]
+
+        else:
+            k, t = self.c[i].mergeRec((lvl - 1), root, splitter, l_r)
+            if t is None:
+                return None, None
+
+        s1 = [float('-inf')]
+        for x in range(1, i, 1):
+            s1.append(self.s[x])
+        if isinstance(k, list):
+            for element in k:
+                s1.append(element)
+        else:
+            s1.append(k)
+        for x in range(i, self.d + 1, 1):
+            s1.append(self.s[x])
+
+        c1 = [None]
+        for x in range(1, i, 1):
+            c1.append(self.c[x])
+        if isinstance(t, list):
+            for child in t:
+                c1.append(child)
+        else:
+            c1.append(t)
+        for x in range(i, self.d + 1, 1):
+            c1.append(self.c[x])
+
+        d1 = len(c1) - 1
+
+        if d1 <= B:
+            self.s, self.c, self.d = s1, c1, d1
+            return None, None
+        else:
+            self.d = floor(d1 / 2)
+
+            self.s = s1[(-self.d):]
+            self.s.insert(0, float('-inf'))
+
+            self.c = c1[(-self.d):]
+            self.c.insert(0, None)
+
+            return s1[B + 1 - self.d], Node(
+                c1[1:(-self.d)], s1[1:(-self.d - 1)])
 
 
 class ABTree:
@@ -162,3 +214,59 @@ class ABTree:
 
     def listAll(self):
         self.list.listAll()
+
+    def count(self):
+        return self.list.count()
+
+    def first(self):
+        return self.list.first()
+
+    def last(self):
+        return self.list.last()
+
+    def locateRange(self, start, end):
+        current = self.locate(start)
+        result = []
+        while current.key <= end:
+            result.append(current)
+            current = current.succ
+        return result
+
+
+# =================================================
+# MERGE ===========================================
+# =================================================
+
+def mergeTrees(tree_1, tree_2):
+    if tree_1.last().key >= tree_2.first().key:
+        if tree_2.last().key >= tree_1.first().key:
+            return None
+        else:
+            tree_1, tree_2 = tree_2, tree_1
+
+    tree_1.last().succ = tree_2.first()
+    tree_2.first().prev = tree_1.last()
+
+    tree_1.first().prev = tree_2.list.head
+    tree_2.list.head.succ = tree_1.first()
+
+    if tree_1.height >= tree_2.height:
+        tree_1.list = tree_2.list
+        k, t = tree_1.root.mergeRec((tree_1.height - tree_2.height),
+                                    tree_2.root,
+                                    tree_1.last().key,
+                                    float('inf'))
+        if t is not None:
+            tree_1.root = Node([t, tree_1.root], k)
+            tree_1.height += 1
+        return tree_1
+
+    else:
+        k, t = tree_2.root.mergeRec((tree_2.height - tree_1.height),
+                                    tree_1.root,
+                                    tree_1.last().key,
+                                    float('-inf'))
+        if t is not None:
+            tree_2.root = Node([t, tree_2.root], k)
+            tree_2.height += 1
+        return tree_2

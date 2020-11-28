@@ -7,7 +7,7 @@
 %   automark,      %UNUSED
     appendixprefix,
     openany,
-    onehalfspacing,
+    singlespacing,
 ]{scrreprt}
 
 \usepackage[T1]{fontenc}
@@ -25,6 +25,7 @@
 \usepackage{csquotes}               % Prevent warning
 \usepackage{amssymb}
 \usepackage{dsfont}
+\usepackage{textcomp}
 
 \include{metadata}
 
@@ -41,5 +42,8 @@
 \printbibliography[type=book,heading=subbibliography,title={Bücher}]
 \printbibliography[type=online,heading=subbibliography,title={Webseiten}]
 \include{inhalt/selbständigkeitserklärung}
+
+\appendix
+\include{inhalt/anhang }
 
 \end{document}
