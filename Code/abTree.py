@@ -9,7 +9,11 @@ class Node:
     """A Node of a tree, containing splitters, children and degree"""
 
     def __init__(self, children, splitters=[]):
-        self.c = [None] + children
+        self.c = [None]
+        if isinstance(children, list):
+            self.c = self.c + children
+        else:
+            self.c.append(children)
         self.s = [float('-inf')]
         if isinstance(splitters, list):
             for item in splitters:
@@ -26,6 +30,12 @@ class Node:
                 return i
             i += 1
         return
+
+    def getMax(self):
+        if isinstance(self.c[self.d], Leaf):
+            return self.c[self.d]
+        else:
+            return self.c[self.d].getMax()
 
     def locateRec(self, key, height):
         i = self.locateLocally(key)
@@ -136,7 +146,10 @@ class Node:
                         self.s[i] = s1[m]
 
     def mergeRec(self, lvl, root, splitter, l_r):
-        i = self.locateLocally(l_r)
+        if l_r == 'l':
+            i = 1
+        else:
+            i = self.d
         if lvl == 0:
             root.s[-1] = splitter
             k, t = root.s[1:], root.c[1:]
@@ -185,6 +198,66 @@ class Node:
             return s1[B + 1 - self.d], Node(
                 c1[1:(-self.d)], s1[1:(-self.d - 1)])
 
+    def splitRec(self, key, height, head_r, first):
+        i = self.locateLocally(key)
+        if height == 1:
+            head_l = Leaf(float('inf'), self.c[i].prev, first)
+            self.c[i].prev.succ = head_l
+            first.prev = head_l
+
+            self.c[i].prev = head_r
+            head_r.succ = self.c[i]
+            # two linked lists
+
+            subtree_l, subtree_r = ABTree(), ABTree()
+
+            subtree_l.root = Node(self.c[1:i], self.s[1:(i - 1)])
+            subtree_l.list.head = head_l
+            subtree_l.height = 1
+            dummyroot = Node(head_l)
+            if subtree_l.root.d > 0:
+                k, t = subtree_l.root.mergeRec(0, dummyroot,
+                                               subtree_l.root.c[-1].key, 'r')
+                if t is not None:
+                    subtree_l.root = Node([t, subroot_l], k)
+                    subtree_l.height += 1
+            else:
+                subtree_l.root = dummyroot
+
+            subtree_r.root = Node(self.c[i:], self.s[i:-1])
+            subtree_r.list.head = head_r
+            subtree_r.height = 1
+
+            return subtree_l, subtree_r
+
+        else:
+            subtree_l, subtree_r = self.c[i].splitRec(key, (height - 1),
+                                                      head_r, first)
+
+        node_l = Node(self.c[1:i], self.s[1:(i - 1)])
+        if node_l.d > 0:
+            k, t = node_l.mergeRec(height - subtree_l.height,
+                                   subtree_l.root, node_l.getMax().key, 'l')
+            if t is not None:
+                subtree_l.root = Node([t, node_l], k)
+                subtree_l.height = height + 1
+            else:
+                subtree_l.root = node_l
+                subtree_l.height = height
+
+        node_r = Node(self.c[i:], self.s[i:-1])
+        if node_r.d > 0:
+            k, t = node_r.mergeRec(height - subtree_r.height,
+                                   subtree_r.root, subtree_l.last().key, 'r')
+            if t is not None:
+                subtree_r.root = Node([t, node_r], k)
+                subtree_r.height = height + 1
+            else:
+                subtree_r.root = node_r
+                subtree_r.height = height
+
+        return subtree_l, subtree_r
+
 
 class ABTree:
     """An (a,b)-Tree, represented as a root.
@@ -232,10 +305,19 @@ class ABTree:
             current = current.succ
         return result
 
+    def split(self, key):
+        if self.first().key >= key:
+            return ABTree(), self
+        if self.last().key < key:
+            return self, ABTree()
+        tree_l, tree_r = self.root.splitRec(
+            key, self.height, self.list.head, self.first())
+        return tree_l, tree_r
 
 # =================================================
 # MERGE ===========================================
 # =================================================
+
 
 def mergeTrees(tree_1, tree_2):
     if tree_1.last().key >= tree_2.first().key:
@@ -255,7 +337,7 @@ def mergeTrees(tree_1, tree_2):
         k, t = tree_1.root.mergeRec((tree_1.height - tree_2.height),
                                     tree_2.root,
                                     tree_1.last().key,
-                                    float('inf'))
+                                    r)
         if t is not None:
             tree_1.root = Node([t, tree_1.root], k)
             tree_1.height += 1
@@ -265,7 +347,7 @@ def mergeTrees(tree_1, tree_2):
         k, t = tree_2.root.mergeRec((tree_2.height - tree_1.height),
                                     tree_1.root,
                                     tree_1.last().key,
-                                    float('-inf'))
+                                    l)
         if t is not None:
             tree_2.root = Node([t, tree_2.root], k)
             tree_2.height += 1

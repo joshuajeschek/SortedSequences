@@ -3,28 +3,39 @@ from random import randrange
 
 
 def main():
-    tree_1 = ABTree()
-    for x in range(0, 30, 1):
-        i = randrange(120, 200, 1)
+    tree = ABTree()
+    for x in range(0, 1000, 1):
+        i = randrange(0, 10000, 1)
         # print('>>> Inserting ', i)
-        tree_1.insert(i, x)
+        tree.insert(i, x)
 
-    print(f'tree_1: {tree_1.height}')
+    print('tree:')
+    tree.listAll()
 
-    result = tree_1.getHeight()
-    print(result)
+    tree_l, tree_r = tree.split(5000)
 
-    tree_2 = ABTree()
-    for x in range(0, 60, 1):
-        i = randrange(0, 120, 1)
-        # print('>>> Inserting ', i)
-        tree_2.insert(i, x)
+    print('tree_l:')
+    tree_l.listAll()
 
-    print(f'tree_2: {tree_2.height}')
+    print('tree_r:')
+    tree_r.listAll()
 
-    result = tree_2.getHeight()
-    print(result)
+    i = randrange(5000, 10000, 1)
+    print(f'tree_r({i}):')
+    result = tree_r.locate(i)
+    print(vars(result))
+
+    i = randrange(0, 50, 1)
+    print(f'tree_l({i}):')
+    result = tree_l.locate(i)
+    print(vars(result))
+
+    del tree, tree_l, tree_r
 
 
 if __name__ == '__main__':
-    main()
+    i = 1
+    while True:
+        print(f'Durchlauf: {i}')
+        main()
+        i += 1

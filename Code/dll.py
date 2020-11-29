@@ -1,3 +1,4 @@
+
 class Leaf:
     """An element of a doubly linked list"""
 
