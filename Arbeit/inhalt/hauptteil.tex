@@ -176,6 +176,13 @@ Nach erfolgreicher Implementierung aller Klassen und den wichtigen Methoden, wol
 \par
 Meinen zweiten Test führte ich in der gleichen Art und Weise durch, jedoch mit insgesamt 300.000 eingefügten Elementen und mit fünffacher Wiederholung. Um weniger Messspitzen zu produzieren, führte ich den Test auf meinem Server aus, dessen Auslastung gleichmäßg gering ist. Eine Wiederholung des Testes dauerte gut sechs Stunden. Nach Abschluss der Tests entfernte ich offensichtliche Messfehler und bildete den Durschnitt der einzelnen Ergebnisse mit gleichem $n$ (Anzahl der Elemente). Daraus resultierte \autoref{fig:benchmark300}. In Blau dargestellt ist die Kurve mit dem Durchschnitt der Messwerte in Abhängigkeit von $n$. Trotz der Entfernung von extremen Messfehlern sind die Ergebnisse noch relativ weit verteilt. Man kann dennoch den logarithmischen Kurvenverlauf erkennen, was auch die Trendlinie, in Grün dargestellt, zeigt.
 
+\begin{figure}
+    \centering{
+        \includegraphics[width=\linewidth]{assets/benchmark300.png}
+        \caption{Test von \texttt{locate} mit 0 bis 300.000 Elementen, blau dargestellt sind die Messwerte, grün die Trendlinie.}
+        \label{fig:benchmark300}
+    }
+\end{figure}
 
 \par
 Die Daten von \autoref{fig:benchmark300} sind zwar schon beeindruckend, aber sagen ohne einen Vergleich noch relativ wenig aus. Deshalb führte ich den gleichen Test mit meiner Implementation der doppelt verketteten Liste durch. Der Vergleich der Trendlinien der beiden Testergebnisse ist in \autoref{fig:listvstree} zu sehen. Ich beschränkte mich hierbei auf ein Maximum von 250 Elementen, da schon so die unterschiedliche Entwicklung der Graphen auf eine beeindruckende Art und Weise zu erkennen ist.
