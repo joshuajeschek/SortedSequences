@@ -9,7 +9,8 @@ def main():
         # print('>>> Inserting ', i)
         tree.insert(i, x)
 
-    targets = [(100, 42), (200, 42), (300, 42), (400, 42), (500, 42), (600, 42), (700, 42), (800, 42), (900, 42)]
+    targets = [(100, 42), (200, 42), (300, 42), (400, 42),
+               (500, 42), (600, 42), (700, 42), (800, 42), (900, 42)]
 
     tree.bulkInsert(targets)
 
@@ -23,5 +24,7 @@ def main():
     # print('tree_2:')
     # tree_2.listAll()
 
+
 if __name__ == '__main__':
+    while True:
         main()

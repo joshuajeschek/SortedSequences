@@ -340,29 +340,27 @@ class ABTree:
                 return self
             m = floor(len(elements) / 2)
             tree_1, tree_2 = self.split(elements[m][0])
-            tree_1_max = tree_1.last().key
-            print(f'tree_1_max: {tree_1_max}')
+            tree_2_min = tree_1.first().key
             e_1 = []
             e_2 = []
             for element in elements:
-                if element[0] <= tree_1_max:
-                    e_1.append(element)
+                if element[0] >= tree_2_min:
+                    e_2.append(element)
                 else:
                     e_2.append(element)
-            print(f'e_1: {e_1}')
 
-            tree_1 = tree_1.bulkInsert(e_1, ceil(k / 2))
-            tree_2 = tree_2.bulkInsert(e_2, floor(k / 2))
+            # tree_1 = tree_1.bulkInsert(e_1, ceil(k / 2))
+            # tree_2 = tree_2.bulkInsert(e_2, floor(k / 2))
 
-            # with concurrent.futures.ThreadPoolExecutor() as executor:
-            #     arguments = [e_1, ceil(k / 2)]
-            #     thread1 = executor.submit(
-            #         lambda p: tree_1.bulkInsert(*p), arguments)
-            #     arguments = [e_2, floor(k / 2)]
-            #     thread2 = executor.submit(
-            #         lambda p: tree_2.bulkInsert(*p), arguments)
-            #     tree_1 = thread1.result()
-            #     tree_2 = thread2.result()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                arguments = [e_1, ceil(k / 2)]
+                thread1 = executor.submit(
+                    lambda p: tree_1.bulkInsert(*p), arguments)
+                arguments = [e_2, floor(k / 2)]
+                thread2 = executor.submit(
+                    lambda p: tree_2.bulkInsert(*p), arguments)
+                tree_1 = thread1.result()
+                tree_2 = thread2.result()
 
             return mergeTrees(tree_1, tree_2)
 
@@ -381,14 +379,9 @@ def mergeTrees(tree_1, tree_2):
         return tree_1
 
     if tree_1.last().key >= tree_2.first().key:
-        print('ehm')
-        print(tree_1.last().key, '>=', tree_2.first().key)
         tree_1.listAll()
-        print('and 2')
         tree_2.listAll()
         if tree_2.last().key >= tree_1.first().key:
-            print('oof')
-            # print(tree_2.last().key, '>=', tree_1.first().key)
             return None
         else:
             tree_1, tree_2 = tree_2, tree_1
