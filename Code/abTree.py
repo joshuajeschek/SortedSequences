@@ -1,5 +1,9 @@
 from dll import *
 from math import floor, ceil
+from multiprocessing import cpu_count, Process, Manager
+import concurrent.futures
+from os import getpid
+from random import randint
 
 A = 2
 B = 4
@@ -219,7 +223,7 @@ class Node:
                 k, t = subtree_l.root.mergeRec(0, dummyroot,
                                                subtree_l.root.c[-1].key, 'r')
                 if t is not None:
-                    subtree_l.root = Node([t, subroot_l], k)
+                    subtree_l.root = Node([t, subtree_l.root], k)
                     subtree_l.height += 1
             else:
                 subtree_l.root = dummyroot
@@ -272,6 +276,8 @@ class ABTree:
         return self.root.locateRec(key, self.height)
 
     def insert(self, key, value):
+        if key is None:
+            return
         k, t = self.root.insertRec(key, value, self.height)
         if t is not None:
             self.root = Node([t, self.root], k)
@@ -297,6 +303,9 @@ class ABTree:
     def last(self):
         return self.list.last()
 
+    def isEmpty(self):
+        return self.list.isEmpty()
+
     def locateRange(self, start, end):
         current = self.locate(start)
         result = []
@@ -306,13 +315,56 @@ class ABTree:
         return result
 
     def split(self, key):
-        if self.first().key >= key:
+        if self.isEmpty():
+            return self, ABTree()
+        elif self.first().key >= key:
             return ABTree(), self
-        if self.last().key < key:
+        elif self.last().key < key:
             return self, ABTree()
         tree_l, tree_r = self.root.splitRec(
             key, self.height, self.list.head, self.first())
         return tree_l, tree_r
+
+    def bulkInsert(self, elements, k=cpu_count()):
+        pid = randint(0, 10000)
+        if k == 1:
+            for element in elements:
+                if len(element) > 1:
+                    self.insert(element[0], element[1])
+                else:
+                    self.insert(element[0])
+            return self
+
+        else:
+            if len(elements) == 0:
+                return self
+            m = floor(len(elements) / 2)
+            tree_1, tree_2 = self.split(elements[m][0])
+            tree_1_max = tree_1.last().key
+            print(f'tree_1_max: {tree_1_max}')
+            e_1 = []
+            e_2 = []
+            for element in elements:
+                if element[0] <= tree_1_max:
+                    e_1.append(element)
+                else:
+                    e_2.append(element)
+            print(f'e_1: {e_1}')
+
+            tree_1 = tree_1.bulkInsert(e_1, ceil(k / 2))
+            tree_2 = tree_2.bulkInsert(e_2, floor(k / 2))
+
+            # with concurrent.futures.ThreadPoolExecutor() as executor:
+            #     arguments = [e_1, ceil(k / 2)]
+            #     thread1 = executor.submit(
+            #         lambda p: tree_1.bulkInsert(*p), arguments)
+            #     arguments = [e_2, floor(k / 2)]
+            #     thread2 = executor.submit(
+            #         lambda p: tree_2.bulkInsert(*p), arguments)
+            #     tree_1 = thread1.result()
+            #     tree_2 = thread2.result()
+
+            return mergeTrees(tree_1, tree_2)
 
 # =================================================
 # MERGE ===========================================
@@ -320,8 +372,23 @@ class ABTree:
 
 
 def mergeTrees(tree_1, tree_2):
+
+    if tree_1.isEmpty():
+        return tree_2
+    elif tree_2.isEmpty():
+        return tree_1
+    elif tree_1.isEmpty() and tree_2.isEmpty():
+        return tree_1
+
     if tree_1.last().key >= tree_2.first().key:
+        print('ehm')
+        print(tree_1.last().key, '>=', tree_2.first().key)
+        tree_1.listAll()
+        print('and 2')
+        tree_2.listAll()
         if tree_2.last().key >= tree_1.first().key:
+            print('oof')
+            # print(tree_2.last().key, '>=', tree_1.first().key)
             return None
         else:
             tree_1, tree_2 = tree_2, tree_1
@@ -337,7 +404,7 @@ def mergeTrees(tree_1, tree_2):
         k, t = tree_1.root.mergeRec((tree_1.height - tree_2.height),
                                     tree_2.root,
                                     tree_1.last().key,
-                                    r)
+                                    'r')
         if t is not None:
             tree_1.root = Node([t, tree_1.root], k)
             tree_1.height += 1
@@ -347,7 +414,7 @@ def mergeTrees(tree_1, tree_2):
         k, t = tree_2.root.mergeRec((tree_2.height - tree_1.height),
                                     tree_1.root,
                                     tree_1.last().key,
-                                    l)
+                                    'l')
         if t is not None:
             tree_2.root = Node([t, tree_2.root], k)
             tree_2.height += 1

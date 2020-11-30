@@ -8,7 +8,7 @@ Sortierte Sequenzen funktionieren nach dem gleichen Prinzip. Wie in \autoref{fig
 \par
 Vergleicht man sortierte Sequenzen mit anderen Datenstrukturen, kann man sowohl Nach- als auch Vorteile feststellen. Einerseits ist der Aufbau einer sortierten Sequenz komplizierter als der einfachererer Datenstrukturen wie Feldern, sie sind allerdings deutlich flexibler, da sie das Einfügen und Entfernen von Elementen effizient unterstützen. Im Vergleich zu Hashtabellen sind sie langsamer, aber mächtiger, da man auch Elemente findet, wenn man nach einem Schlüssel $s$ sucht, zu dem kein Element $e$ existiert (genauer: man findet das Element $e'$ für das gilt: $s'\leq s$).
 \par
-Somit können sortierte Sequenzen die Anforderungen Geschwindigkeit und Flexibilität sehr gut erfüllen. Auf der Grundlage des Buches \textit{"`Sequential and Parallel Algorithms and Data Structures - The Basic Toolbox"'} \cite{Sanders:19} werde ich die Funktionsweise von sortierten Sequenzen erklären, wie sie in Kapitel 7 des genannten Buches beschrieben werden. Das Hauptaugenmerk wird auf sortierten Sequenzen mit (a,b)-Bäumen als Navigationsstruktur liegen, es sind jedoch auch diverse andere Arten von sortierten Sequenzen vorstellbar, welche auch in logarithmischer Zeit arbeiten können.
+Somit können sortierte Sequenzen die Anforderungen Geschwindigkeit und Flexibilität sehr gut erfüllen. Auf der Grundlage des Buches \textit{"`Sequential and Parallel Algorithms and Data Structures - The Basic Toolbox"'} \cite{Sanders:19} werde ich die Funktionsweise von sortierten Sequenzen erklären, wie sie in Kapitel 7 des genannten Buches beschrieben werden. Das Hauptaugenmerk wird auf sortierten Sequenzen mit (a,b)-Bäumen als Navigationsstruktur liegen, es sind jedoch auch diverse andere Arten von sortierten Sequenzen vorstellbar, welche auch in logarithmischer Zeit arbeiten können. Andere Navigationsstrukturen können eine Baumstruktur besitzen, wie beispielsweise AVL-Bäume oder Splay-Bäume. Dies muss aber nicht der Fall sein, es existieren einige andere Implementierungen von Navigationsstrukturen, auf die in dieser Arbeit nicht eingegangen wird.
 
 \begin{figure}
     \begin{center}
@@ -185,7 +185,7 @@ Meinen zweiten Test führte ich in der gleichen Art und Weise durch, jedoch mit 
 \end{figure}
 
 \par
-Die Daten von \autoref{fig:benchmark300} sind zwar schon beeindruckend, aber sagen ohne einen Vergleich noch relativ wenig aus. Deshalb führte ich den gleichen Test mit meiner Implementation der doppelt verketteten Liste durch. Der Vergleich der Trendlinien der beiden Testergebnisse ist in \autoref{fig:listvstree} zu sehen. Ich beschränkte mich hierbei auf ein Maximum von 250 Elementen, da schon so die unterschiedliche Entwicklung der Graphen auf eine beeindruckende Art und Weise zu erkennen ist.
+Die Daten von \autoref{fig:benchmark300} sind zwar schon beeindruckend, aber sagen ohne einen Vergleich noch relativ wenig aus. Deshalb führte ich den gleichen Test mit meiner Implementierung der doppelt verketteten Liste durch. Der Vergleich der Trendlinien der beiden Testergebnisse ist in \autoref{fig:listvstree} zu sehen. Ich beschränkte mich hierbei auf ein Maximum von 250 Elementen, da schon so die unterschiedliche Entwicklung der Graphen auf eine beeindruckende Art und Weise zu erkennen ist.
 
 \begin{figure}
     \centering{
