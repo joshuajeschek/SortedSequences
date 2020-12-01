@@ -57,8 +57,11 @@
 \tableofcontents
 
 \cleardoublepage
-\markboth{Abbildungsverzeichnis}{Abbildungsverzeichnis}
+\phantomsection
+\addcontentsline{toc}{chapter}{\listfigurename}
 \listoffigures
+
+\addtocontents{toc}{\protect\vspace{30pt}}
 
 \cleardoublepage
 \pagenumbering{arabic}

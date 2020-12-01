@@ -38,12 +38,21 @@
 
 \include{inhalt/schlussteil}
 
-\printbibheading
-\printbibliography[type=book,heading=subbibliography,title={Bücher}]
-\printbibliography[type=online,heading=subbibliography,title={Webseiten}]
-\include{inhalt/selbständigkeitserklärung}
+
+
+\pagenumbering{roman}
+\setcounter{page}{4}
+
 
 \appendix
 \include{inhalt/anhang }
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+\printbibheading
+\printbibliography[type=book,heading=subbibliography,title={Bücher}]
+\printbibliography[type=online,heading=subbibliography,title={Webseiten}]
+
+\include{inhalt/selbständigkeitserklärung}
 
 \end{document}
