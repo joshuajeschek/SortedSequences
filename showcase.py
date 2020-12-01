@@ -78,6 +78,7 @@ def main():
 
     print('\n--- split() ---')
     splitkey = int(input('Specify a key to split the tree at: '))
+
     input('Press enter to tree 1:')
     tree_1, tree_2 = mergedTree.split(splitkey)
 
