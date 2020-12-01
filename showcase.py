@@ -75,7 +75,6 @@ def main():
     mergedTree = mergeTrees(tree_1, tree_2)
     mergedTree.listAll()
 
-
     print('\n--- split() ---')
     splitkey = int(input('Specify a key to split the tree at: '))
 
@@ -89,6 +88,7 @@ def main():
 
     print('Tree 2:')
     tree_2.listAll()
+
 
 if __name__ == '__main__':
     main()
