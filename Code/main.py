@@ -12,19 +12,31 @@ def main():
     targets = [(100, 42), (200, 42), (300, 42), (400, 42),
                (500, 42), (600, 42), (700, 42), (800, 42), (900, 42)]
 
-    tree.bulkInsert(targets)
+    tree.bulkInsert(targets, 2)
 
     tree.listAll()
-
     # tree_1, tree_2 = tree.split(500)
 #
+    # tree_1, tree_2 = tree.split(500)
+
     # print('tree_1:')
     # tree_1.listAll()
-#
+
     # print('tree_2:')
     # tree_2.listAll()
+#
+    # tree = mergeTrees(tree_1, tree_2)
+#
+    # print('merged:')
+    # tree.listAll()
+#
+    # newtree = ABTree()
+#
+    # newnewtree = mergeTrees(newtree, tree)
+#
+    # print('newnew:')
+    # newnewtree.listAll()
 
 
 if __name__ == '__main__':
-    while True:
-        main()
+    main()

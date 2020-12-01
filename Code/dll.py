@@ -1,3 +1,4 @@
+from time import sleep
 
 class Leaf:
     """An element of a doubly linked list"""
@@ -63,6 +64,7 @@ class DoublyLinkedList:
         while current != self.head:
             print(f'{current.key}: {current.value}')
             current = current.succ
+            sleep(0.001)
 
     def count(self):
         current = self.head.succ
@@ -73,7 +75,11 @@ class DoublyLinkedList:
         return i
 
     def first(self):
+        if self.isEmpty():
+            return None
         return self.head.succ
 
     def last(self):
+        if self.isEmpty():
+            return None
         return self.head.prev

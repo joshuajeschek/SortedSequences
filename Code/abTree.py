@@ -1,15 +1,14 @@
 from dll import *
 from math import floor, ceil
-from multiprocessing import cpu_count, Process, Manager
+from multiprocessing import cpu_count
 import concurrent.futures
-from os import getpid
-from random import randint
 
 A = 2
 B = 4
 
 
 class Node:
+
     """A Node of a tree, containing splitters, children and degree"""
 
     def __init__(self, children, splitters=[]):
@@ -220,11 +219,13 @@ class Node:
             subtree_l.height = 1
             dummyroot = Node(head_l)
             if subtree_l.root.d > 0:
+                # print('K')
                 k, t = subtree_l.root.mergeRec(0, dummyroot,
                                                subtree_l.root.c[-1].key, 'r')
                 if t is not None:
                     subtree_l.root = Node([t, subtree_l.root], k)
                     subtree_l.height += 1
+                # subtree_l.listAll()
             else:
                 subtree_l.root = dummyroot
 
@@ -326,41 +327,71 @@ class ABTree:
         return tree_l, tree_r
 
     def bulkInsert(self, elements, k=cpu_count()):
-        pid = randint(0, 10000)
         if k == 1:
             for element in elements:
                 if len(element) > 1:
                     self.insert(element[0], element[1])
                 else:
                     self.insert(element[0])
-            return self
 
         else:
             if len(elements) == 0:
                 return self
             m = floor(len(elements) / 2)
             tree_1, tree_2 = self.split(elements[m][0])
-            tree_2_min = tree_1.first().key
-            e_1 = []
-            e_2 = []
-            for element in elements:
-                if element[0] >= tree_2_min:
-                    e_2.append(element)
-                else:
-                    e_2.append(element)
+            tree_1_max = tree_1.last()
+            tree_2_min = tree_2.first()
+            print('min', tree_2_min)
+            e_1, e_2 = [], []
+            if tree_1_max is None and tree_2_min is not None:
+                for element in elements:
+                    if element[0] >= tree_2_min.key:
+                        e_2.append(element)
+                        print('e_2:', element)
+                    else:
+                        e_1.append(element)
+                        print('e_1:', element)
 
-            # tree_1 = tree_1.bulkInsert(e_1, ceil(k / 2))
-            # tree_2 = tree_2.bulkInsert(e_2, floor(k / 2))
+            elif tree_2_min is None and tree_1_max is not None:
+                for element in elements:
+                    if element[0] <= tree_1_max.key:
+                        e_1.append(element)
+                        print('e_1:', element)
+                    else:
+                        e_2.append(element)
+                        print('e_2:', element)
 
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                arguments = [e_1, ceil(k / 2)]
-                thread1 = executor.submit(
-                    lambda p: tree_1.bulkInsert(*p), arguments)
-                arguments = [e_2, floor(k / 2)]
-                thread2 = executor.submit(
-                    lambda p: tree_2.bulkInsert(*p), arguments)
-                tree_1 = thread1.result()
-                tree_2 = thread2.result()
+            elif tree_1_max is None and tree_2_min is None:
+                e_1 = []
+                e_2 = elements[:]
+
+            else:
+                for element in elements:
+                    if element[0] >= tree_2_min.key:
+                        e_2.append(element)
+                        print('e_2:', element)
+                    else:
+                        e_1.append(element)
+                        print('e_1:', element)
+
+            print('tree_1:')
+            tree_1.listAll()
+            print('tree_2:')
+            tree_2.listAll()
+
+            tree_1.bulkInsert(e_1, ceil(k / 2))
+            print('------', k, '------')
+            tree_2.bulkInsert(e_2, floor(k / 2))
+
+#            with concurrent.futures.ThreadPoolExecutor() as executor:
+#                arguments = [e_1, ceil(k / 2)]
+#                thread1 = executor.submit(
+#                    lambda p: tree_1.bulkInsert(*p), arguments)
+#                arguments = [e_2, floor(k / 2)]
+#                thread2 = executor.submit(
+#                    lambda p: tree_2.bulkInsert(*p), arguments)
+#                tree_1 = thread1.result()
+#                tree_2 = thread2.result()
 
             return mergeTrees(tree_1, tree_2)
 
@@ -379,11 +410,13 @@ def mergeTrees(tree_1, tree_2):
         return tree_1
 
     if tree_1.last().key >= tree_2.first().key:
-        tree_1.listAll()
-        tree_2.listAll()
+        print('ehm')
+        print(tree_1.last().key, '>=', tree_2.first().key)
+        # tree_1.listAll()
         if tree_2.last().key >= tree_1.first().key:
             return None
         else:
+            print('switched \'em')
             tree_1, tree_2 = tree_2, tree_1
 
     tree_1.last().succ = tree_2.first()
