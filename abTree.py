@@ -1,5 +1,7 @@
 from dll import *
 from math import floor, ceil
+from multiprocessing import cpu_count
+import concurrent.futures
 
 A = 2
 B = 4
@@ -378,6 +380,63 @@ class ABTree:
         tree_l, tree_r = self.root.splitRec(
             key, self.height, self.list.head, self.first())
         return tree_l, tree_r
+
+    def bulkInsert(self, elements, k=cpu_count()):
+        '''Insert multiple elements
+        (provided as iterables (key,value) in a list),
+        using parallel recursion'''
+
+        if k == 1:
+            for element in elements:
+                if len(element) > 1:
+                    self.insert(element[0], element[1])
+                else:
+                    self.insert(element[0])
+            return self
+
+        else:
+            if len(elements) == 0:
+                return self
+
+            m = floor(len(elements) / 2)
+            # split tree at key of element [m]
+            tree_1, tree_2 = self.split(elements[m][0])
+
+            tree_1_max = tree_1.last()
+            tree_2_min = tree_2.first()
+            e_1, e_2 = [], []
+
+            # splitting elements -> fit in the trees without overlapping
+            if tree_2_min is None and tree_1_max is not None:
+                for element in elements:
+                    if element[0] <= tree_1_max.key:
+                        e_1.append(element)
+                    else:
+                        e_2.append(element)
+
+            # two empty trees
+            elif tree_1_max is None and tree_2_min is None:
+                e_1 = elements[:m]
+                e_2 = elements[m:]
+
+            else:
+                for element in elements:
+                    if element[0] >= tree_2_min.key:
+                        e_2.append(element)
+                    else:
+                        e_1.append(element)
+
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                arguments = [e_1, ceil(k / 2)]
+                thread1 = executor.submit(
+                    lambda p: tree_1.bulkInsert(*p), arguments)
+                arguments = [e_2, floor(k / 2)]
+                thread2 = executor.submit(
+                    lambda p: tree_2.bulkInsert(*p), arguments)
+                tree_1 = thread1.result()
+                tree_2 = thread2.result()
+
+            return mergeTrees(tree_1, tree_2)
 
 # =================================================
 # MERGE ===========================================
