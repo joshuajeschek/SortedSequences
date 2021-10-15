@@ -1,7 +1,5 @@
 from dll import *
 from math import floor, ceil
-from multiprocessing import cpu_count
-import concurrent.futures
 
 A = 2
 B = 4
@@ -12,54 +10,65 @@ class Node:
     """A Node of a tree, containing splitters, children and degree"""
 
     def __init__(self, children, splitters=[]):
-        self.c = [None]
-        if isinstance(children, list):
+        self.c = [None]                 # c[0]
+        if isinstance(children, list):  # multiple children provided as a list
             self.c = self.c + children
         else:
             self.c.append(children)
-        self.s = [float('-inf')]
+        self.s = [float('-inf')]        # leftmost splitter (s[0])
         if isinstance(splitters, list):
             for item in splitters:
                 self.s.append(item)
         else:
             self.s.append(splitters)
-        self.d = len(self.c) - 1    # account for c[0]
-        self.s.append(float('inf'))
+        self.d = len(self.c) - 1        # account for c[0]
+        self.s.append(float('inf'))     # rightmost splitter (s[d])
 
     def locateLocally(self, key):
+        '''calculates the index of the child containing the given key'''
+
         i = 1
         while i <= (self.d):
             if key <= self.s[i]:
                 return i
             i += 1
-        return
 
     def getMax(self):
+        '''returns the last node in the tree, without using the list'''
+
         if isinstance(self.c[self.d], Leaf):
             return self.c[self.d]
         else:
             return self.c[self.d].getMax()
 
     def locateRec(self, key, height):
+        '''finds the element with the given key, if it exists.
+        If not: returns the next element'''
+
         i = self.locateLocally(key)
-        if height == 1:
+        if height == 1:     # bottom of tree reached
             if self.c[i].key >= key:
                 return self.c[i]
             else:
+                # -> next element (leftmost in next node)
                 return self.c[i].succ
         else:
+            # descend to lower level in the tree
             return self.c[i].locateRec(key, (height - 1))
 
-    def insertRec(self, key, value, h):   # deleted argument l
+    def insertRec(self, key, value, h):
+        '''inserts an element with the given key
+        and value at the correct position'''
+
         i = self.locateLocally(key)
-        if h == 1:
-            if self.c[i].key == key:
+        if h == 1:     # bottom of tree reached
+            if self.c[i].key == key:    # replace value, element exists
                 self.c[i].value = value
-                return None, None
+                return None, None       # tree does not need to change
             else:
-                if self.c[i].key > key:
+                if self.c[i].key > key:     # found successor of new element
                     k, t = key, self.c[i].insertBefore(key, value)
-                else:
+                else:   # found predecessor of new element
                     k, t = self.c[i].key, self.c[i].insertAfter(key, value)
                     self.c[i], t = t, self.c[i]
         else:
@@ -67,6 +76,7 @@ class Node:
             if t is None:
                 return None, None
 
+        # new splitter list, children list and degree calculation:
         s1 = [float('-inf')]
         for x in range(1, i, 1):
             s1.append(self.s[x])
@@ -81,12 +91,12 @@ class Node:
         for x in range(i, self.d + 1, 1):
             c1.append(self.c[x])
 
-        d1 = len(c1) - 1
+        d1 = len(c1) - 1    # account for c[0]
 
-        if d1 <= B:
+        if d1 <= B:     # still space in node to accomodate all children
             self.s, self.c, self.d = s1, c1, (self.d + 1)
-            return None, None
-        else:
+            return None, None   # node above does not change
+        else:           # node needs to be split
             self.d = floor((B + 1) / 2)
 
             self.s = s1[(B + 2 - self.d):]
@@ -95,26 +105,33 @@ class Node:
             self.c = c1[(B + 2 - self.d):]
             self.c.insert(0, None)
 
+            # return new node and splitter to
+            # next level of recursion (node above)
+            # -> new child can be created there
             return s1[B + 1 - self.d], Node(
                 c1[1:(B + 1 - self.d + 1)], s1[1:(B - self.d + 1)])
 
     def removeLocally(self, i):
+        '''removes a child from a node'''
+
         self.c[i:self.d] = self.c[(i + 1):(self.d + 1)]
         self.s[i:(self.d - 1)] = self.s[(i + 1):self.d]
         self.d = len(self.c) - 1
 
     def removeRec(self, key, h):
+        '''removes an element from the sequence'''
         i = self.locateLocally(key)
-        if h == 1:
+        if h == 1:      # bottom of tree reached
             if self.c[i].key == key:
-                self.c[i].remove()
-                self.removeLocally(i)
+                self.c[i].remove()      # remove Leaf from list
+                self.removeLocally(i)   # remove from node
         else:
             self.c[i].removeRec(key, (h - 1))
-            if self.c[i].d < A:
+            if self.c[i].d < A:  # node needs to be balanced
                 if i == self.d:
                     i -= 1
 
+                    # constructing new node from neighbor and current node
                     s1 = []
                     for splitter in self.c[i].s:
                         s1.append(splitter)
@@ -128,14 +145,14 @@ class Node:
                     for child in self.c[i + 1].c:
                         child is not None and c1.append(child)
 
-                    d1 = len(c1) - 1
+                    d1 = len(c1) - 1    # account for c[o]
 
-                    if d1 <= B:
+                    if d1 <= B:     # new node is legal
                         self.c[i + 1].s = s1
                         self.c[i + 1].c = c1
                         self.c[i + 1].d = d1
 
-                    else:
+                    else:           # new node exceeds B, needs to be split
                         m = ceil(d1 / 2)
 
                         self.c[i].s = s1[0:m]
@@ -149,11 +166,17 @@ class Node:
                         self.s[i] = s1[m]
 
     def mergeRec(self, lvl, root, splitter, l_r):
-        if l_r == 'l':
+        '''merging of two trees, represented as two roots.
+        can be don on the left side of  current node (l_r='l')
+        or on the right side (l_r='r')
+        lvl describes height difference,
+        splitter is maximum of the tree on the left side'''
+
+        if l_r == 'l':  # descend on left side
             i = 1
-        else:
+        else:           # descend on right side
             i = self.d
-        if lvl == 0:
+        if lvl == 0:    # reached point where tree is attached
             root.s[-1] = splitter
             k, t = root.s[1:], root.c[1:]
 
@@ -162,10 +185,11 @@ class Node:
             if t is None:
                 return None, None
 
+        # create new node
         s1 = [float('-inf')]
         for x in range(1, i, 1):
             s1.append(self.s[x])
-        if isinstance(k, list):
+        if isinstance(k, list):     # can be single splitter or list
             for element in k:
                 s1.append(element)
         else:
@@ -176,7 +200,7 @@ class Node:
         c1 = [None]
         for x in range(1, i, 1):
             c1.append(self.c[x])
-        if isinstance(t, list):
+        if isinstance(t, list):     # cam be single child or list
             for child in t:
                 c1.append(child)
         else:
@@ -184,12 +208,12 @@ class Node:
         for x in range(i, self.d + 1, 1):
             c1.append(self.c[x])
 
-        d1 = len(c1) - 1
+        d1 = len(c1) - 1    # account for c[0]
 
-        if d1 <= B:
+        if d1 <= B:     # still room for everything
             self.s, self.c, self.d = s1, c1, d1
-            return None, None
-        else:
+            return None, None   # nothing changed for parent
+        else:           # splitting needed
             self.d = floor(d1 / 2)
 
             self.s = s1[(-self.d):]
@@ -198,12 +222,16 @@ class Node:
             self.c = c1[(-self.d):]
             self.c.insert(0, None)
 
+            # return new Node with splitter for parent
             return s1[B + 1 - self.d], Node(
                 c1[1:(-self.d)], s1[1:(-self.d - 1)])
 
     def splitRec(self, key, height, head_r, first):
+        '''splitting a root node into two new trees'''
+
         i = self.locateLocally(key)
         if height == 1:
+            # splitting the list
             head_l = Leaf(float('inf'), self.c[i].prev, first)
             self.c[i].prev.succ = head_l
             first.prev = head_l
@@ -212,23 +240,24 @@ class Node:
             head_r.succ = self.c[i]
             # two linked lists
 
+            # creating new trees
             subtree_l, subtree_r = ABTree(), ABTree()
 
+            # attaching dummy element to left tree
             subtree_l.root = Node(self.c[1:i], self.s[1:(i - 1)])
             subtree_l.list.head = head_l
             subtree_l.height = 1
             dummyroot = Node(head_l)
-            if subtree_l.root.d > 0:
-                # print('K')
+            if subtree_l.root.d > 0:    # left tree contains elements
                 k, t = subtree_l.root.mergeRec(0, dummyroot,
                                                subtree_l.root.c[-1].key, 'r')
                 if t is not None:
                     subtree_l.root = Node([t, subtree_l.root], k)
                     subtree_l.height += 1
-                # subtree_l.listAll()
-            else:
+            else:   # left tree only contains root
                 subtree_l.root = dummyroot
 
+            # managing right tree
             subtree_r.root = Node(self.c[i:], self.s[i:-1])
             subtree_r.list.head = head_r
             subtree_r.height = 1
@@ -239,6 +268,7 @@ class Node:
             subtree_l, subtree_r = self.c[i].splitRec(key, (height - 1),
                                                       head_r, first)
 
+        # attaching node_l to rest of subtree_l
         node_l = Node(self.c[1:i], self.s[1:(i - 1)])
         if node_l.d > 0:
             k, t = node_l.mergeRec(height - subtree_l.height,
@@ -250,6 +280,7 @@ class Node:
                 subtree_l.root = node_l
                 subtree_l.height = height
 
+        # attaching node_r to rest of subtree_r
         node_r = Node(self.c[i:], self.s[i:-1])
         if node_r.d > 0:
             k, t = node_r.mergeRec(height - subtree_r.height,
@@ -274,40 +305,54 @@ class ABTree:
         self.height = 1
 
     def locate(self, key):
+        '''locates an element with the given key'''
+
         return self.root.locateRec(key, self.height)
 
     def insert(self, key, value):
-        if key is None:
-            return
+        '''inserts an element with the given key'''
+
         k, t = self.root.insertRec(key, value, self.height)
-        if t is not None:
+        if t is not None:   # root node needs to be split
             self.root = Node([t, self.root], k)
             self.height += 1
 
     def remove(self, key):
+        '''removes an element with the given key, if it exists'''
+
         self.root.removeRec(key, self.height)
-        if self.root == 1 and self.height > 1:
+        if self.root == 1 and self.height > 1:  # height will decrease
             old = self.root
             self.root = old.c[1]
             del old
             self.height -= 1
 
     def listAll(self):
+        '''lists all elements of the underlying list on the command line'''
         self.list.listAll()
 
     def count(self):
+        '''returns number of elements in the list'''
         return self.list.count()
 
     def first(self):
+        '''returns first element in the list
+        returns None, if tree is empty!'''
         return self.list.first()
 
     def last(self):
+        '''returns last element in the list
+        returns None, if tree is empty!'''
         return self.list.last()
 
     def isEmpty(self):
+        '''returns True or False,
+        wether tree contains elements or not'''
         return self.list.isEmpty()
 
     def locateRange(self, start, end):
+        '''returns a list of elements in the given range'''
+
         current = self.locate(start)
         result = []
         while current.key <= end:
@@ -316,84 +361,23 @@ class ABTree:
         return result
 
     def split(self, key):
-        if self.isEmpty():
+        '''splits tree at the given key,
+        returns two new trees'''
+
+        if self.isEmpty():  # return two empty trees
             return self, ABTree()
         elif self.first().key >= key:
+            # key is smaller than first element in tree
+            # return empty tree and self
             return ABTree(), self
         elif self.last().key < key:
+            # key is bigger than last element in tree
+            # return self and empty tree
             return self, ABTree()
+
         tree_l, tree_r = self.root.splitRec(
             key, self.height, self.list.head, self.first())
         return tree_l, tree_r
-
-    def bulkInsert(self, elements, k=cpu_count()):
-        if k == 1:
-            for element in elements:
-                if len(element) > 1:
-                    self.insert(element[0], element[1])
-                else:
-                    self.insert(element[0])
-
-        else:
-            if len(elements) == 0:
-                return self
-            m = floor(len(elements) / 2)
-            tree_1, tree_2 = self.split(elements[m][0])
-            tree_1_max = tree_1.last()
-            tree_2_min = tree_2.first()
-            print('min', tree_2_min)
-            e_1, e_2 = [], []
-            if tree_1_max is None and tree_2_min is not None:
-                for element in elements:
-                    if element[0] >= tree_2_min.key:
-                        e_2.append(element)
-                        print('e_2:', element)
-                    else:
-                        e_1.append(element)
-                        print('e_1:', element)
-
-            elif tree_2_min is None and tree_1_max is not None:
-                for element in elements:
-                    if element[0] <= tree_1_max.key:
-                        e_1.append(element)
-                        print('e_1:', element)
-                    else:
-                        e_2.append(element)
-                        print('e_2:', element)
-
-            elif tree_1_max is None and tree_2_min is None:
-                e_1 = []
-                e_2 = elements[:]
-
-            else:
-                for element in elements:
-                    if element[0] >= tree_2_min.key:
-                        e_2.append(element)
-                        print('e_2:', element)
-                    else:
-                        e_1.append(element)
-                        print('e_1:', element)
-
-            print('tree_1:')
-            tree_1.listAll()
-            print('tree_2:')
-            tree_2.listAll()
-
-            tree_1.bulkInsert(e_1, ceil(k / 2))
-            print('------', k, '------')
-            tree_2.bulkInsert(e_2, floor(k / 2))
-
-#            with concurrent.futures.ThreadPoolExecutor() as executor:
-#                arguments = [e_1, ceil(k / 2)]
-#                thread1 = executor.submit(
-#                    lambda p: tree_1.bulkInsert(*p), arguments)
-#                arguments = [e_2, floor(k / 2)]
-#                thread2 = executor.submit(
-#                    lambda p: tree_2.bulkInsert(*p), arguments)
-#                tree_1 = thread1.result()
-#                tree_2 = thread2.result()
-
-            return mergeTrees(tree_1, tree_2)
 
 # =================================================
 # MERGE ===========================================
@@ -401,6 +385,7 @@ class ABTree:
 
 
 def mergeTrees(tree_1, tree_2):
+    '''merges two trees and returns one'''
 
     if tree_1.isEmpty():
         return tree_2
@@ -409,29 +394,28 @@ def mergeTrees(tree_1, tree_2):
     elif tree_1.isEmpty() and tree_2.isEmpty():
         return tree_1
 
-    if tree_1.last().key >= tree_2.first().key:
-        print('ehm')
-        print(tree_1.last().key, '>=', tree_2.first().key)
-        # tree_1.listAll()
+    if tree_1.last().key >= tree_2.first().key:     # overlapping
         if tree_2.last().key >= tree_1.first().key:
+            # checking if trees could be switched and then merged
             return None
         else:
-            print('switched \'em')
-            tree_1, tree_2 = tree_2, tree_1
+            tree_1, tree_2 = tree_2, tree_1     # switch trees
 
+    # merge the underlying lists
     tree_1.last().succ = tree_2.first()
     tree_2.first().prev = tree_1.last()
 
     tree_1.first().prev = tree_2.list.head
     tree_2.list.head.succ = tree_1.first()
 
+    # merge smaller tree to higher tree
     if tree_1.height >= tree_2.height:
         tree_1.list = tree_2.list
         k, t = tree_1.root.mergeRec((tree_1.height - tree_2.height),
                                     tree_2.root,
                                     tree_1.last().key,
                                     'r')
-        if t is not None:
+        if t is not None:   # root needs to be split
             tree_1.root = Node([t, tree_1.root], k)
             tree_1.height += 1
         return tree_1
@@ -441,7 +425,7 @@ def mergeTrees(tree_1, tree_2):
                                     tree_1.root,
                                     tree_1.last().key,
                                     'l')
-        if t is not None:
+        if t is not None:   # root needsd to be split
             tree_2.root = Node([t, tree_2.root], k)
             tree_2.height += 1
         return tree_2
